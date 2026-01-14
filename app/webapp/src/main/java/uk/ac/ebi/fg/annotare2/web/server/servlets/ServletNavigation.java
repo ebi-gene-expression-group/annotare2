@@ -41,7 +41,8 @@ enum ServletNavigation {
     CHANGE_PASSWORD("/change-password/", "/static.jsp?pageName=change-password.jsp"),
     HOME("/", "/home.jsp"),
     EDITOR("/edit/", "/editor.jsp"),
-    PRIVACY_NOTICE("/privacy-notice/","/static.jsp?pageName=privacy-notice.jsp");
+    PRIVACY_NOTICE("/privacy-notice/","/static.jsp?pageName=privacy-notice.jsp"),
+    PRIVACY_NOTICE_PDF("/privacy-notice-document/", "/static.jsp?pageName=privacy-notice-pdf.jsp");
 
     private static final Logger log = LoggerFactory.getLogger(ServletNavigation.class);
 

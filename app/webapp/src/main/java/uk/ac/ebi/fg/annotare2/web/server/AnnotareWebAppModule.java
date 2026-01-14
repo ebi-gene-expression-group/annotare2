@@ -115,6 +115,7 @@ public class AnnotareWebAppModule extends ServletModule {
         serveRegex("/verify-email/" + JSESSIONID).with(VerifyEmailServlet.class);
         serveRegex("/change-password/" + JSESSIONID).with(ChangePasswordServlet.class);
         serveRegex("/privacy-notice/" + JSESSIONID).with(PrivacyNoticeServlet.class);
+        serveRegex("/privacy-notice-document/" + JSESSIONID).with(PrivacyNoticePdfServlet.class);
         serve("/status").with(StatusServlet.class);
         serve("/upload").with(UploadServlet.class);
         serve("/export").with(ExportServlet.class);
@@ -140,6 +141,7 @@ public class AnnotareWebAppModule extends ServletModule {
         bind(VerifyEmailServlet.class).in(SINGLETON);
         bind(ChangePasswordServlet.class).in(SINGLETON);
         bind(PrivacyNoticeServlet.class).in(SINGLETON);
+        bind(PrivacyNoticePdfServlet.class).in(SINGLETON);
         bind(GlobusProxyServlet.class).in(SINGLETON);
 
         // shared services
