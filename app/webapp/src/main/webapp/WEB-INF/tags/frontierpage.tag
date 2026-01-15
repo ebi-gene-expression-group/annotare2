@@ -193,6 +193,13 @@
         </section>
     </div>
 </footer>
+<div id="data-protection-message-configuration"
+     data-message="This website requires cookies, and the limited processing of your personal data in order to function.
+         By using the site you are agreeing to this as outlined in our
+         <a target='_blank\' href='/fg/annotare/privacy-notice-document/'
+         class='white-color'>Privacy Notice</a> and <a target='_blank' href='https://www.ebi.ac.uk/about/terms-of-use\'
+                                                       class='white-color'>Terms of Use</a>."
+     data-service-id="Annotare" data-data-protection-version="1"></div>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <!--
