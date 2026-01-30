@@ -9,7 +9,7 @@ pipeline {
         copyArtifactPermission('Annotare-web-app-release-wwwdev, Annotare-web-app-release-prod');
         buildDiscarder(logRotator(
           artifactDaysToKeepStr: '180',
-          artifactNumToKeepStr: '20',
+          artifactNumToKeepStr: '5',
           daysToKeepStr: '180',
           numToKeepStr: '20',
         ));
