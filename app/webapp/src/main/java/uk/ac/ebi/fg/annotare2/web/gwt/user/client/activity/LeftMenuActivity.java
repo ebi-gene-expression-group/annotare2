@@ -23,12 +23,14 @@ import com.google.gwt.place.shared.PlaceController;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
+import uk.ac.ebi.fg.annotare2.web.gwt.common.client.ApplicationDataServiceAsync;
 import uk.ac.ebi.fg.annotare2.web.gwt.common.client.ImportSubmissionServiceAsync;
 import uk.ac.ebi.fg.annotare2.web.gwt.common.client.SubmissionCreateServiceAsync;
 import uk.ac.ebi.fg.annotare2.web.gwt.common.client.rpc.AsyncCallbackWrapper;
 import uk.ac.ebi.fg.annotare2.web.gwt.common.client.rpc.ReportingAsyncCallback;
 import uk.ac.ebi.fg.annotare2.web.gwt.common.client.rpc.ReportingAsyncCallback.FailureMessage;
 import uk.ac.ebi.fg.annotare2.web.gwt.common.client.view.NotificationPopupPanel;
+import uk.ac.ebi.fg.annotare2.web.gwt.common.shared.ApplicationProperties;
 import uk.ac.ebi.fg.annotare2.web.gwt.common.shared.SubmissionType;
 import uk.ac.ebi.fg.annotare2.web.gwt.user.client.event.SubmissionListUpdatedEvent;
 import uk.ac.ebi.fg.annotare2.web.gwt.user.client.place.ImportSubmissionPlace;
@@ -46,6 +48,7 @@ public class LeftMenuActivity extends AbstractActivity implements LeftMenuView.P
     private final PlaceController placeController;
     private final SubmissionCreateServiceAsync createService;
     private final ImportSubmissionServiceAsync importService;
+    private final ApplicationDataServiceAsync dataService;
 
     private EventBus eventBus;
 
@@ -54,11 +57,13 @@ public class LeftMenuActivity extends AbstractActivity implements LeftMenuView.P
             LeftMenuView view,
             PlaceController placeController,
             SubmissionCreateServiceAsync createService,
-            ImportSubmissionServiceAsync importService) {
+            ImportSubmissionServiceAsync importService,
+            ApplicationDataServiceAsync dataService) {
         this.view = view;
         this.placeController = placeController;
         this.createService = createService;
         this.importService = importService;
+        this.dataService = dataService;
     }
 
     public LeftMenuActivity withPlace(Place place) {
@@ -73,6 +78,15 @@ public class LeftMenuActivity extends AbstractActivity implements LeftMenuView.P
         view.setPresenter(this);
         containerWidget.setWidget(view.asWidget());
         this.eventBus = eventBus;
+
+        dataService.getApplicationProperties(AsyncCallbackWrapper.callbackWrap(
+                new ReportingAsyncCallback<ApplicationProperties>(FailureMessage.UNABLE_TO_LOAD_APP_PROPERTIES) {
+                    @Override
+                    public void onSuccess(ApplicationProperties result) {
+                        view.setCreateButtonEnabled(result.isCreateButtonEnabled());
+                    }
+                }
+        ));
     }
 
     @Override

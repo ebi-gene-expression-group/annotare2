@@ -36,6 +36,8 @@ public class ApplicationProperties implements IsSerializable {
     private String globusTransferComponentURL;
     private String globusTransferAPIURL;
     private String contextPath;
+    private boolean isSubmitButtonEnabled;
+    private boolean isCreateButtonEnabled;
     private Map<String, String> uploadTutorialUrls;
     private Map<String, String> samplesTutorialUrls;
     private Map<String, String> assignmentTutorialUrls;
@@ -55,6 +57,8 @@ public class ApplicationProperties implements IsSerializable {
         this.globusTransferComponentURL = other.globusTransferComponentURL;
         this.globusTransferAPIURL = other.globusTransferAPIURL;
         this.contextPath = other.contextPath;
+        this.isSubmitButtonEnabled = other.isSubmitButtonEnabled;
+        this.isCreateButtonEnabled = other.isCreateButtonEnabled;
         this.uploadTutorialUrls = other.uploadTutorialUrls == null ? null : new java.util.HashMap<String, String>(other.uploadTutorialUrls);
         this.samplesTutorialUrls = other.samplesTutorialUrls == null ? null : new java.util.HashMap<String, String>(other.samplesTutorialUrls);
         this.assignmentTutorialUrls = other.assignmentTutorialUrls == null ? null : new java.util.HashMap<String, String>(other.assignmentTutorialUrls);
@@ -95,6 +99,14 @@ public class ApplicationProperties implements IsSerializable {
     public String getGlobusTransferAPIURL() {return globusTransferAPIURL;}
 
     public String getContextPath() {return contextPath;}
+
+    public boolean isSubmitButtonEnabled() {
+        return isSubmitButtonEnabled;
+    }
+
+    public boolean isCreateButtonEnabled() {
+        return isCreateButtonEnabled;
+    }
 
     public Map<String, String> getUploadTutorialUrls() {return uploadTutorialUrls;}
 
@@ -161,6 +173,16 @@ public class ApplicationProperties implements IsSerializable {
 
         public Builder setContextPath(String contextPath) {
             properties.contextPath = contextPath;
+            return this;
+        }
+
+        public Builder setSubmitButtonEnabled(boolean isEnabled) {
+            properties.isSubmitButtonEnabled = isEnabled;
+            return this;
+        }
+
+        public Builder setCreateButtonEnabled(boolean isEnabled) {
+            properties.isCreateButtonEnabled = isEnabled;
             return this;
         }
 

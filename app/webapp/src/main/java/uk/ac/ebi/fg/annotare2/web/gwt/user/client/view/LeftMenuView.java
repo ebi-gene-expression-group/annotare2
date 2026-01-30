@@ -28,6 +28,8 @@ public interface LeftMenuView extends IsWidget {
 
     void setFilter(SubmissionListFilter filter);
 
+    void setCreateButtonEnabled(boolean isEnabled);
+
     public interface Presenter {
 
         void onSubmissionFilter(SubmissionListFilter filter);

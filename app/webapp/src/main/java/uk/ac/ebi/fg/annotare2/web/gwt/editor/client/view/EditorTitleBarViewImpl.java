@@ -93,6 +93,7 @@ public class EditorTitleBarViewImpl extends Composite implements EditorTitleBarV
     private boolean isCurator;
     private boolean isOwnedByCreator;
     private boolean hasReferrer;
+    private boolean isSubmissionEnabled = true;
 
     private final ContactUsDialog contactUsDialog;
     private final WaitingPopup waitingPopup;
@@ -135,6 +136,14 @@ public class EditorTitleBarViewImpl extends Composite implements EditorTitleBarV
     }
 
     @Override
+    public void setSubmissionEnabled(boolean isEnabled) {
+        this.isSubmissionEnabled = isEnabled;
+        if (submissionDetails != null) {
+            setSubmissionDetails(submissionDetails);
+        }
+    }
+
+    @Override
     public void setSubmissionDetails(SubmissionDetails submissionDetails) {
         this.submissionDetails = submissionDetails;
 
@@ -151,7 +160,7 @@ public class EditorTitleBarViewImpl extends Composite implements EditorTitleBarV
 
         //set status and type
         SubmissionStatus status = submissionDetails.getStatus();
-        submitButton.setVisible(status.canSubmit(isCurator)); //Tmp disabled submit button to stop submissions
+        submitButton.setVisible(isSubmissionEnabled && status.canSubmit(isCurator));
         validateButton.setVisible(submissionDetails.getType().isExperiment() && status.canSubmit(isCurator));
         exportButton.setVisible(submissionDetails.getType().isExperiment());
         editButton.setVisible(editButton.isVisible() && status.canAssign());

@@ -260,6 +260,14 @@ public class AnnotareProperties implements DataFileStoreProperties {
         return getProperty("annotare.slurm.job.submitter.script");
     }
 
+    public boolean isSubmitButtonEnabled() {
+        return getBooleanProperty("annotare.submitButton.enabled");
+    }
+
+    public boolean isCreateButtonEnabled() {
+        return getBooleanProperty("annotare.createButton.enabled");
+    }
+
     protected File getDirProperty(String name) {
         String property = getProperty(name);
         File dir = isNullOrEmpty(property) ?

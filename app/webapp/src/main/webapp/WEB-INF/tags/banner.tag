@@ -13,10 +13,14 @@
 <script type="text/JavaScript">$(document).foundationExtendEBI();</script>
 
 <script type="text/javascript">
+    // document.addEventListener("DOMContentLoaded", function(event){
+    //     ebiInjectAnnouncements({ headline: '', message: '<strong>Uploading large files to Annotare? ' +
+    //             'We recommend using the Globus platform for a faster and more reliable transfer experience.  </strong>' +
+    //             '<a href="https://www.ebi.ac.uk/fg/annotare/help/globus_upload.html" target="_blank">Learn more</a>', priority: 'warning' });
+
     document.addEventListener("DOMContentLoaded", function(event){
-        ebiInjectAnnouncements({ headline: '', message: '<strong>Uploading large files to Annotare? ' +
-                'We recommend using the Globus platform for a faster and more reliable transfer experience.  </strong>' +
-                '<a href="https://www.ebi.ac.uk/fg/annotare/help/globus_upload.html" target="_blank">Learn more</a>', priority: 'warning' });
+        ebiInjectAnnouncements({ headline: '', message: '<strong>Due to an EMBL-EBI-wide system outage, the Annotare submission service is disrupted.</strong>' +
+                'You can create/edit experiments, but not submit them. File uploads work, but file import is paused. Processing delays expected.', priority: 'warning' });
         
         var notification_dive = document.getElementsByClassName("notifications-js")
         if (notification_dive.length > 0) {
