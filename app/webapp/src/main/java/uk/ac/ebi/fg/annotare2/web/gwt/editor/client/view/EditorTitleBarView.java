@@ -50,6 +50,8 @@ public interface EditorTitleBarView extends IsWidget {
 
     void setSubmissionDetails(SubmissionDetails result);
 
+    void setSubmissionEnabled(boolean isEnabled);
+
     void setExperimentProfileType(ExperimentProfileType experimentProfileType);
 
     void setUserHasReferrer(boolean b);

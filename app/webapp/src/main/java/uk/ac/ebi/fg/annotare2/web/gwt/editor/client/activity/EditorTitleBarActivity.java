@@ -130,6 +130,15 @@ public class EditorTitleBarActivity extends AbstractActivity implements EditorTi
     }
 
     private void initAsync() {
+        dataService.getApplicationProperties(AsyncCallbackWrapper.callbackWrap(
+                new ReportingAsyncCallback<ApplicationProperties>(FailureMessage.UNABLE_TO_LOAD_APP_PROPERTIES) {
+                    @Override
+                    public void onSuccess(ApplicationProperties result) {
+                        view.setSubmissionEnabled(result.isSubmitButtonEnabled());
+                    }
+                }
+        ));
+
         userService.me(AsyncCallbackWrapper.callbackWrap(
                 new ReportingAsyncCallback<UserDto>(FailureMessage.UNABLE_TO_LOAD_SUBMISSION) {
                     @Override

@@ -109,6 +109,12 @@ public class LeftMenuViewImpl extends Composite implements LeftMenuView {
         selectItem(filters.get(filter));
     }
 
+    @Override
+    public void setCreateButtonEnabled(boolean isEnabled) {
+        createButton.setEnabled(isEnabled);
+        createButton.setTitle(isEnabled ? "" : "Submission creation is temporarily disabled");
+    }
+
     private void selectItem(Widget item) {
         final String styleName = "selectedItem";
         if (selected != null) {
