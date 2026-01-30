@@ -5,16 +5,6 @@ if (currentBuild.getBuildCauses().toString().contains('BranchIndexingCause')) {
   return
 }
 pipeline {
-    options {
-        copyArtifactPermission('Annotare-web-app-release-wwwdev, Annotare-web-app-release-prod');
-        buildDiscarder(logRotator(
-          artifactDaysToKeepStr: '180',
-          artifactNumToKeepStr: '5',
-          daysToKeepStr: '180',
-          numToKeepStr: '20',
-        ));
-        parallelsAlwaysFailFast();
-    }
     agent {
         kubernetes {
             cloud 'atlas-admin-2'
@@ -22,9 +12,34 @@ pipeline {
             defaultContainer 'maven'
         }
     }
+    options {
+        copyArtifactPermission('Annotare-web-app-release-wwwdev, Annotare-web-app-release-prod');
+        parallelsAlwaysFailFast();
+    }
     stages {
         stage('Initialize') {
             steps {
+                script {
+                    if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'develop') {
+                        properties([
+                            buildDiscarder(logRotator(
+                                artifactDaysToKeepStr: '30',
+                                artifactNumToKeepStr: '5',
+                                daysToKeepStr: '30',
+                                numToKeepStr: '20'
+                            ))
+                        ])
+                    } else {
+                        properties([
+                            buildDiscarder(logRotator(
+                                artifactDaysToKeepStr: '10',
+                                artifactNumToKeepStr: '5',
+                                daysToKeepStr: '10',
+                                numToKeepStr: '20'
+                            ))
+                        ])
+                    }
+                }
                 sh '''
                   echo "PATH = ${PATH}"
                   echo "M2_HOME = ${M2_HOME}"
