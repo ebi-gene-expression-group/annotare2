@@ -224,6 +224,10 @@ public class AnnotareProperties implements DataFileStoreProperties {
         return getProperty("cookie.popup.template.path");
     }
 
+    public String getBannerPropertiesPath() {
+        return getProperty("banner.properties.path");
+    }
+
     public String getTokenExpiryTime(){
         return getProperty("annotare.password.reset.token.expiry");
     }

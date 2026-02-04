@@ -72,6 +72,8 @@ public class AnnotareWebAppModule extends ServletModule {
         filterRegex("^/.+[.]nocache[.]js",
                 "/status").through(ExpiresNowFilter.class);
 
+        filter("/*").through(BannerFilter.class);
+
         filter("/status").through(AccessLoggingSuppressFilter.class);
 
         filter("/",
@@ -123,6 +125,7 @@ public class AnnotareWebAppModule extends ServletModule {
         serve("/api/*").with(GlobusProxyServlet.class);
 
         bind(ExpiresNowFilter.class).in(SINGLETON);
+        bind(BannerFilter.class).in(SINGLETON);
         bind(AccessLoggingSuppressFilter.class).in(SINGLETON);
         bind(HibernateSessionFilter.class).in(SINGLETON);
         bind(SetCharacterEncodingFilter.class).in(SINGLETON);

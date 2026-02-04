@@ -19,8 +19,14 @@
     //             '<a href="https://www.ebi.ac.uk/fg/annotare/help/globus_upload.html" target="_blank">Learn more</a>', priority: 'warning' });
 
     document.addEventListener("DOMContentLoaded", function(event){
-        ebiInjectAnnouncements({ headline: '', message: '<strong>Due to an EMBL-EBI-wide system outage, the Annotare submission service is disrupted.</strong>' +
-                'You can create/edit experiments, but not submit them. File uploads work, but file import is paused. Processing delays expected.', priority: 'warning' });
+        var bannerMessage = '<c:out value="${bannerMessage}" escapeXml="false"/>';
+        if (bannerMessage) {
+            ebiInjectAnnouncements({
+                headline: '<c:out value="${bannerHeadline}" escapeXml="false"/>',
+                message: bannerMessage,
+                priority: 'warning'
+            });
+        }
         
         var notification_dive = document.getElementsByClassName("notifications-js")
         if (notification_dive.length > 0) {
