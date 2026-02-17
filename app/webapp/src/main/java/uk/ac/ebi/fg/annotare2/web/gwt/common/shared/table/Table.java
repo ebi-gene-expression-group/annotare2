@@ -98,49 +98,82 @@ public class Table implements IsSerializable {
         int rowWidth = getWidth();
         cleanUpFactorValueColumns(rowWidth);
         rowWidth = getWidth(); //getting updated width
-        for(int i = 0; i < rowWidth; i++){
-            if(isUnassignedOrEmpty(rows.get(1).getValue(i))){
-                boolean emptyColumn = true;
-                for(int j = 2; j<rows.size(); j++){
-                    if(!(isUnassignedOrEmpty(rows.get(j).getValue(i)))){
-                        emptyColumn = false;
-                        break;
-                    }
-                }
-                if(emptyColumn){
-                    int reIndex = i; //created new variable to make it effectively final to use in Lambda
-                    rows.forEach(r-> r.removeValue(reIndex));
-                    i--; rowWidth--;
-                }
 
+        List<Integer> columnsToRemove = new ArrayList<>();
+
+        for(int i = 0; i < rowWidth; i++){
+            // Material Type column should not be deleted even if it is empty
+            if ("Material Type".equalsIgnoreCase(rows.get(0).getValue(i))) {
+                continue;
+            }
+
+            boolean isEmpty = true;
+            for(int j = 1; j < rows.size(); j++){
+                if(!isUnassignedOrEmpty(rows.get(j).getValue(i))){
+                    isEmpty = false;
+                    break;
+                }
+            }
+
+            if(isEmpty){
+                columnsToRemove.add(i);
+            }
+        }
+
+        if (!columnsToRemove.isEmpty()) {
+            for (Row row : rows) {
+                for (int i = columnsToRemove.size() - 1; i >= 0; i--) {
+                    int colIdx = columnsToRemove.get(i);
+                    row.removeValue(colIdx);
+                }
             }
         }
     }
 
     private void cleanUpFactorValueColumns(int rowWidth) {
-        int noOfFactorValueColums = 0;
+        int noOfAddedColumns = 0;
+        List<Integer> factorValueIndices = new ArrayList<>();
         for(int i = 0; i< rowWidth; i++){
             if(rows.get(0).getValue(i).contains("Factor Value")){
-                noOfFactorValueColums ++;
+                factorValueIndices.add(i);
+                noOfAddedColumns++;
                 //Add new columns at the end to make it consistant along all samples
-                rows.get(0).setValue(rowWidth +noOfFactorValueColums-1, rows.get(0).getValue(i));
+                rows.get(0).setValue(rowWidth + noOfAddedColumns - 1, rows.get(0).getValue(i));
+
+                if (i + 1 < rowWidth && rows.get(0).getValue(i + 1).contains("Unit")) {
+                    noOfAddedColumns++;
+                    rows.get(0).setValue(rowWidth + noOfAddedColumns - 1, rows.get(0).getValue(i + 1));
+                }
             }
         }
         for(int i = 1; i<rows.size(); i++){
-            String factorValueColHeader;
-            String factorValue;
+            int k=0;
             for(int j = 0; j< rowWidth; j++){
                 if(rows.get(0).getValue(j).contains("Factor Value")){
-                    factorValueColHeader = rows.get(0).getValue(j);
-                    factorValue = rows.get(i).getValue(j);
+                    String factorValueColHeader = rows.get(0).getValue(j);
+                    String factorValue = rows.get(i).getValue(j);
                     if(!isUnassignedOrEmpty(factorValue)){
-                        int k=0;
                         //Locate correct factor values column in newly added columns and move original column value to here
                         while(!(rows.get(0).getValue(rowWidth +k).equalsIgnoreCase(factorValueColHeader))){
                             k++;
                         }
                         rows.get(i).setValue(rowWidth +k, factorValue);
                         rows.get(i).setValue(j, null);
+                    }
+                    k++; // move to next added column (could be Unit or next FV)
+
+                    // Check if it has a unit
+                    if (j + 1 < rowWidth && rows.get(0).getValue(j + 1).contains("Unit")) {
+                        String unitColHeader = rows.get(0).getValue(j + 1);
+                        String unitValue = rows.get(i).getValue(j + 1);
+                        if (!isUnassignedOrEmpty(unitValue)) {
+                            while (!(rows.get(0).getValue(rowWidth + k).equalsIgnoreCase(unitColHeader))) {
+                                k++;
+                            }
+                            rows.get(i).setValue(rowWidth + k, unitValue);
+                            rows.get(i).setValue(j + 1, null);
+                        }
+                        k++;
                     }
                 }
             }
