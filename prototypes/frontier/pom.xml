@@ -15,7 +15,7 @@
         <!-- Convenience property to set the GWT version -->
         <gwt.version>2.7.0</gwt.version>
         <slf4j.version>1.7.7</slf4j.version>
-        <tomcat.version>7.0.42</tomcat.version>
+        <tomcat.version>9.0.110</tomcat.version>
         
         <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
