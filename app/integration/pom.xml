@@ -20,13 +20,13 @@
     <groupId>uk.ac.ebi.fg.annotare2</groupId>
     <artifactId>integration</artifactId>
     <packaging>pom</packaging>
-    <version>2.1.4</version>
+    <version>2.1.5</version>
     <name>Annotare Integration Components</name>
 
     <parent>
         <groupId>uk.ac.ebi.fg.annotare2</groupId>
         <artifactId>annotare2</artifactId>
-        <version>2.1.4</version>
+        <version>2.1.5</version>
     </parent>
 
     <modules>

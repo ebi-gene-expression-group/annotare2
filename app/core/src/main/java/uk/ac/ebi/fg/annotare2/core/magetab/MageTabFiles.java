@@ -218,11 +218,17 @@ public class MageTabFiles {
         List<String> header = rows.get(0);
         int originalWidth = header.size();
 
-        // Find all Factor Value column indices
+        // Find all Factor Value column indices and their associated Unit columns
         List<Integer> factorValueIndices = new ArrayList<>();
+        Map<Integer, Integer> unitColumnMap = new LinkedHashMap<>();
+
         for (int i = 0; i < originalWidth; i++) {
             if (header.get(i) != null && header.get(i).contains("Factor Value")) {
                 factorValueIndices.add(i);
+                // Check if the next column is a Unit column
+                if (i + 1 < originalWidth && header.get(i + 1) != null && header.get(i + 1).contains("Unit")) {
+                    unitColumnMap.put(i, i + 1);
+                }
             }
         }
 
@@ -230,16 +236,22 @@ public class MageTabFiles {
             return;
         }
 
-        // Create new columns at the end for Factor Values
-        Map<Integer, String> factorValueHeaders = new LinkedHashMap<>();
+        // Create new columns at the end for Factor Values and Units
+        List<String> newColumnHeaders = new ArrayList<>();
+        Map<Integer, Integer> oldToNewIdxMap = new LinkedHashMap<>();
+
         for (int idx : factorValueIndices) {
-            factorValueHeaders.put(idx, header.get(idx));
+            oldToNewIdxMap.put(idx, header.size() + newColumnHeaders.size());
+            newColumnHeaders.add(header.get(idx));
+            if (unitColumnMap.containsKey(idx)) {
+                int unitIdx = unitColumnMap.get(idx);
+                oldToNewIdxMap.put(unitIdx, header.size() + newColumnHeaders.size());
+                newColumnHeaders.add(header.get(unitIdx));
+            }
         }
 
-        // Add Factor Value column headers at the end
-        for (String factorHeader : factorValueHeaders.values()) {
-            header.add(factorHeader);
-        }
+        // Add new column headers at the end
+        header.addAll(newColumnHeaders);
 
         // Process each data row
         for (int rowIdx = 1; rowIdx < rows.size(); rowIdx++) {
@@ -250,16 +262,12 @@ public class MageTabFiles {
                 row.add("");
             }
 
-            // For each Factor Value column, move the value to the new location
-            for (int oldIdx : factorValueIndices) {
+            // For each Factor Value and associated Unit column, move the value to the new location
+            for (int oldIdx : oldToNewIdxMap.keySet()) {
                 String value = oldIdx < row.size() ? row.get(oldIdx) : "";
+                int newIdx = oldToNewIdxMap.get(oldIdx);
 
                 if (!isUnassignedOrEmpty(value)) {
-                    // Find the corresponding new column position
-                    String factorHeader = header.get(oldIdx);
-                    int newIdx = header.size() - factorValueHeaders.size() +
-                            new ArrayList<>(factorValueHeaders.values()).indexOf(factorHeader);
-
                     // Add value to new position
                     while (row.size() <= newIdx) {
                         row.add("");
@@ -285,35 +293,35 @@ public class MageTabFiles {
 
         List<String> header = rows.get(0);
         int width = header.size();
+        List<Integer> columnsToRemove = new ArrayList<>();
 
-        // Find columns to remove (iterate backwards to avoid index issues)
-        for (int colIdx = width - 1; colIdx >= 0; colIdx--) {
-            boolean isEmpty = true;
-
-            // Check if column at index 1 (first data row) is unassigned/empty
-            if (rows.size() > 1) {
-                List<String> firstDataRow = rows.get(1);
-                String firstValue = colIdx < firstDataRow.size() ? firstDataRow.get(colIdx) : "";
-
-                if (!isUnassignedOrEmpty(firstValue)) {
-                    continue; // Column is not empty, skip
-                }
+        // Identify columns to remove
+        for (int colIdx = 0; colIdx < width; colIdx++) {
+            // Material Type column should not be deleted even if it is empty
+            if ("Material Type".equalsIgnoreCase(header.get(colIdx))) {
+                continue;
             }
 
-            // Check all data rows (starting from row 2)
-            for (int rowIdx = 2; rowIdx < rows.size(); rowIdx++) {
+            boolean isEmpty = true;
+            for (int rowIdx = 1; rowIdx < rows.size(); rowIdx++) {
                 List<String> row = rows.get(rowIdx);
                 String value = colIdx < row.size() ? row.get(colIdx) : "";
-
                 if (!isUnassignedOrEmpty(value)) {
                     isEmpty = false;
                     break;
                 }
             }
 
-            // If column is empty, remove it from all rows
             if (isEmpty) {
-                for (List<String> row : rows) {
+                columnsToRemove.add(colIdx);
+            }
+        }
+
+        // If there are columns to remove, do it in one pass per row
+        if (!columnsToRemove.isEmpty()) {
+            for (List<String> row : rows) {
+                for (int i = columnsToRemove.size() - 1; i >= 0; i--) {
+                    int colIdx = columnsToRemove.get(i);
                     if (colIdx < row.size()) {
                         row.remove(colIdx);
                     }
