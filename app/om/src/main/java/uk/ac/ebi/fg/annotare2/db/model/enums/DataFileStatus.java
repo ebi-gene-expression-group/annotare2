@@ -30,7 +30,8 @@ public enum DataFileStatus {
     MD5_ERROR("MD5 error"),
     FILE_NOT_FOUND_ERROR("file not found"),
     ERROR("error"),
-    REMOVED("removed");
+    REMOVED("removed"),
+    ARCHIVED("Archived");
 
     private final String title;
 
@@ -47,7 +48,7 @@ public enum DataFileStatus {
     }
 
     public boolean isOk() {
-        return STORED == this || ASSOCIATED == this || REMOVED == this;
+        return STORED == this || ASSOCIATED == this || REMOVED == this || ARCHIVED == this;
     }
 
     public boolean isLocal() {

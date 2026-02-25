@@ -339,5 +339,14 @@
         </rollback>
     </changeSet>
 
+    <changeSet id="addArchivedStatusToDataFilesTable" author="sandeepkurri">
+        <sql>
+            alter table data_files
+                modify status enum ('ARCHIVED', 'TO_BE_STORED', 'STORED', 'TO_BE_ASSOCIATED', 'ASSOCIATED', 'MD5_ERROR', 'FILE_NOT_FOUND_ERROR', 'ERROR', 'REMOVED') not null;
+        </sql>
+        <rollback>
+            alter table data_files modify status enum ('TO_BE_STORED', 'STORED', 'TO_BE_ASSOCIATED', 'ASSOCIATED', 'MD5_ERROR', 'FILE_NOT_FOUND_ERROR', 'ERROR', 'REMOVED') not null;
+        </rollback>
+    </changeSet>
 
 </databaseChangeLog>
