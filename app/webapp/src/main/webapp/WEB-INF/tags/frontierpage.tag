@@ -100,10 +100,12 @@
     <!-- also inform ES so we can host your colour palette file -->
     <!-- end CSS-->
     <t:analytics></t:analytics>
+    <t:chatbot></t:chatbot>
 </head>
 
 <body class="level2"><!-- add any of your classes or IDs -->
 <t:analytics-body></t:analytics-body>
+<t:chatbot-body></t:chatbot-body>
 <t:banner></t:banner>
 <!-- add any of your classes or IDs -->
 <div id="skip-to">
