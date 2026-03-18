@@ -19,7 +19,9 @@ package uk.ac.ebi.fg.annotare2.web.gwt.common.shared.table;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -132,49 +134,46 @@ public class Table implements IsSerializable {
 
     private void cleanUpFactorValueColumns(int rowWidth) {
         int noOfAddedColumns = 0;
-        List<Integer> factorValueIndices = new ArrayList<>();
-        for(int i = 0; i< rowWidth; i++){
-            if(rows.get(0).getValue(i).contains("Factor Value")){
-                factorValueIndices.add(i);
-                noOfAddedColumns++;
-                //Add new columns at the end to make it consistant along all samples
-                rows.get(0).setValue(rowWidth + noOfAddedColumns - 1, rows.get(0).getValue(i));
+        Map<Integer, Integer> oldToNewIdxMap = new LinkedHashMap<>();
 
-                if (i + 1 < rowWidth && rows.get(0).getValue(i + 1).contains("Unit")) {
-                    noOfAddedColumns++;
-                    rows.get(0).setValue(rowWidth + noOfAddedColumns - 1, rows.get(0).getValue(i + 1));
+        for (int i = 0; i < rowWidth; i++) {
+            String header = rows.get(0).getValue(i);
+            if (header != null && header.contains("Factor Value")) {
+                noOfAddedColumns++;
+                int newFvIdx = rowWidth + noOfAddedColumns - 1;
+                rows.get(0).setValue(newFvIdx, header);
+                oldToNewIdxMap.put(i, newFvIdx);
+
+                int j = i + 1;
+                while (j < rowWidth) {
+                    String h = rows.get(0).getValue(j);
+                    if (h != null && (h.contains("Unit") || h.contains("Term Source REF") || h.contains("Term Accession Number"))) {
+                        noOfAddedColumns++;
+                        int newRelIdx = rowWidth + noOfAddedColumns - 1;
+                        rows.get(0).setValue(newRelIdx, h);
+                        oldToNewIdxMap.put(j, newRelIdx);
+                        j++;
+                    } else {
+                        break;
+                    }
                 }
+                i = j - 1;
             }
         }
-        for(int i = 1; i<rows.size(); i++){
-            int k=0;
-            for(int j = 0; j< rowWidth; j++){
-                if(rows.get(0).getValue(j).contains("Factor Value")){
-                    String factorValueColHeader = rows.get(0).getValue(j);
-                    String factorValue = rows.get(i).getValue(j);
-                    if(!isUnassignedOrEmpty(factorValue)){
-                        //Locate correct factor values column in newly added columns and move original column value to here
-                        while(!(rows.get(0).getValue(rowWidth +k).equalsIgnoreCase(factorValueColHeader))){
-                            k++;
-                        }
-                        rows.get(i).setValue(rowWidth +k, factorValue);
-                        rows.get(i).setValue(j, null);
-                    }
-                    k++; // move to next added column (could be Unit or next FV)
 
-                    // Check if it has a unit
-                    if (j + 1 < rowWidth && rows.get(0).getValue(j + 1).contains("Unit")) {
-                        String unitColHeader = rows.get(0).getValue(j + 1);
-                        String unitValue = rows.get(i).getValue(j + 1);
-                        if (!isUnassignedOrEmpty(unitValue)) {
-                            while (!(rows.get(0).getValue(rowWidth + k).equalsIgnoreCase(unitColHeader))) {
-                                k++;
-                            }
-                            rows.get(i).setValue(rowWidth + k, unitValue);
-                            rows.get(i).setValue(j + 1, null);
-                        }
-                        k++;
-                    }
+        if (oldToNewIdxMap.isEmpty()) {
+            return;
+        }
+
+        for (int i = 1; i < rows.size(); i++) {
+            Row row = rows.get(i);
+            for (Map.Entry<Integer, Integer> entry : oldToNewIdxMap.entrySet()) {
+                int oldIdx = entry.getKey();
+                int newIdx = entry.getValue();
+                String value = row.getValue(oldIdx);
+                if (!isUnassignedOrEmpty(value)) {
+                    row.setValue(newIdx, value);
+                    row.setValue(oldIdx, null);
                 }
             }
         }

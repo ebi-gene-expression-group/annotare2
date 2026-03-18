@@ -114,6 +114,50 @@ public class TableTest {
         }
     }
 
+    @Test
+    public void testTableCleanUpWithTermSourceAndAccession() {
+        Table table = new Table();
+        table.addRow(asList("Sample Name", "Factor Value [Age]", "Unit", "Term Source REF", "Term Accession Number"));
+        table.addRow(asList("Sample 1", "10", "year", "UO", "http://purl.obolibrary.org/obo/UO_0000036"));
+
+        table.cleanUp();
+
+        assertEquals(5, table.getWidth());
+        assertEquals("Sample Name", table.getValueAt(0, 0));
+        assertEquals("Factor Value [Age]", table.getValueAt(0, 1));
+        assertEquals("Unit", table.getValueAt(0, 2));
+        assertEquals("Term Source REF", table.getValueAt(0, 3));
+        assertEquals("Term Accession Number", table.getValueAt(0, 4));
+
+        assertEquals("Sample 1", table.getValueAt(1, 0));
+        assertEquals("10", table.getValueAt(1, 1));
+        assertEquals("year", table.getValueAt(1, 2));
+        assertEquals("UO", table.getValueAt(1, 3));
+        assertEquals("http://purl.obolibrary.org/obo/UO_0000036", table.getValueAt(1, 4));
+    }
+
+    @Test
+    public void testTableCleanUpWithCharacteristics() {
+        Table table = new Table();
+        table.addRow(asList("Sample Name", "Characteristics [Organism]", "Factor Value [Age]", "Unit", "Term Source REF"));
+        table.addRow(asList("Sample 1", "Homo sapiens", "10", "year", "UO"));
+
+        table.cleanUp();
+
+        assertEquals(5, table.getWidth());
+        assertEquals("Sample Name", table.getValueAt(0, 0));
+        assertEquals("Characteristics [Organism]", table.getValueAt(0, 1));
+        assertEquals("Factor Value [Age]", table.getValueAt(0, 2));
+        assertEquals("Unit", table.getValueAt(0, 3));
+        assertEquals("Term Source REF", table.getValueAt(0, 4));
+
+        assertEquals("Sample 1", table.getValueAt(1, 0));
+        assertEquals("Homo sapiens", table.getValueAt(1, 1));
+        assertEquals("10", table.getValueAt(1, 2));
+        assertEquals("year", table.getValueAt(1, 3));
+        assertEquals("UO", table.getValueAt(1, 4));
+    }
+
     private static <T> List<T> asList(T... array) {
         List<T> list = new ArrayList<T>();
         Collections.addAll(list, array);

@@ -210,7 +210,7 @@ public class MageTabFiles {
     /**
      * Reorganizes Factor Value columns to the end of the table for consistency.
      */
-    private static void reorganizeFactorValueColumns(List<List<String>> rows) {
+    static void reorganizeFactorValueColumns(List<List<String>> rows) {
         if (rows.isEmpty()) {
             return;
         }
@@ -218,35 +218,41 @@ public class MageTabFiles {
         List<String> header = rows.get(0);
         int originalWidth = header.size();
 
-        // Find all Factor Value column indices and their associated Unit columns
-        List<Integer> factorValueIndices = new ArrayList<>();
-        Map<Integer, Integer> unitColumnMap = new LinkedHashMap<>();
+        // Find all Factor Value column indices and their associated Unit and Term Source/Accession columns
+        Map<Integer, List<Integer>> factorValueToRelatedMap = new LinkedHashMap<>();
 
         for (int i = 0; i < originalWidth; i++) {
             if (header.get(i) != null && header.get(i).contains("Factor Value")) {
-                factorValueIndices.add(i);
-                // Check if the next column is a Unit column
-                if (i + 1 < originalWidth && header.get(i + 1) != null && header.get(i + 1).contains("Unit")) {
-                    unitColumnMap.put(i, i + 1);
+                List<Integer> related = new ArrayList<>();
+                int j = i + 1;
+                while (j < originalWidth) {
+                    String h = header.get(j);
+                    if (h != null && (h.contains("Unit") || h.contains("Term Source REF") || h.contains("Term Accession Number"))) {
+                        related.add(j);
+                        j++;
+                    } else {
+                        break;
+                    }
                 }
+                factorValueToRelatedMap.put(i, related);
             }
         }
 
-        if (factorValueIndices.isEmpty()) {
+        if (factorValueToRelatedMap.isEmpty()) {
             return;
         }
 
-        // Create new columns at the end for Factor Values and Units
+        // Create new columns at the end for Factor Values and related columns
         List<String> newColumnHeaders = new ArrayList<>();
         Map<Integer, Integer> oldToNewIdxMap = new LinkedHashMap<>();
 
-        for (int idx : factorValueIndices) {
-            oldToNewIdxMap.put(idx, header.size() + newColumnHeaders.size());
-            newColumnHeaders.add(header.get(idx));
-            if (unitColumnMap.containsKey(idx)) {
-                int unitIdx = unitColumnMap.get(idx);
-                oldToNewIdxMap.put(unitIdx, header.size() + newColumnHeaders.size());
-                newColumnHeaders.add(header.get(unitIdx));
+        for (Map.Entry<Integer, List<Integer>> entry : factorValueToRelatedMap.entrySet()) {
+            int fvIdx = entry.getKey();
+            oldToNewIdxMap.put(fvIdx, header.size() + newColumnHeaders.size());
+            newColumnHeaders.add(header.get(fvIdx));
+            for (int relIdx : entry.getValue()) {
+                oldToNewIdxMap.put(relIdx, header.size() + newColumnHeaders.size());
+                newColumnHeaders.add(header.get(relIdx));
             }
         }
 
