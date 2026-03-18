@@ -18,6 +18,7 @@ package uk.ac.ebi.fg.annotare2.web.gwt.common.shared;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,6 +42,7 @@ public class ApplicationProperties implements IsSerializable {
     private Map<String, String> uploadTutorialUrls;
     private Map<String, String> samplesTutorialUrls;
     private Map<String, String> assignmentTutorialUrls;
+    private List<String> blockedFileExtensions;
 
     ApplicationProperties() {
     }
@@ -62,6 +64,7 @@ public class ApplicationProperties implements IsSerializable {
         this.uploadTutorialUrls = other.uploadTutorialUrls == null ? null : new java.util.HashMap<String, String>(other.uploadTutorialUrls);
         this.samplesTutorialUrls = other.samplesTutorialUrls == null ? null : new java.util.HashMap<String, String>(other.samplesTutorialUrls);
         this.assignmentTutorialUrls = other.assignmentTutorialUrls == null ? null : new java.util.HashMap<String, String>(other.assignmentTutorialUrls);
+        this.blockedFileExtensions = other.blockedFileExtensions == null ? null : new java.util.ArrayList<String>(other.blockedFileExtensions);
     }
 
     public boolean isFtpEnabled() {
@@ -113,6 +116,10 @@ public class ApplicationProperties implements IsSerializable {
     public Map<String, String> getSamplesTutorialUrls() {return samplesTutorialUrls;}
 
     public Map<String, String> getAssignmentTutorialUrls() {return assignmentTutorialUrls;}
+
+    public List<String> getBlockedFileExtensions() {
+        return blockedFileExtensions;
+    }
 
     public static class Builder {
         private final ApplicationProperties properties;
@@ -198,6 +205,11 @@ public class ApplicationProperties implements IsSerializable {
 
         public Builder setAssignmentTutorialUrls(Map<String, String> map) {
             properties.assignmentTutorialUrls = map;
+            return this;
+        }
+
+        public Builder setBlockedFileExtensions(List<String> extensions) {
+            properties.blockedFileExtensions = extensions;
             return this;
         }
 

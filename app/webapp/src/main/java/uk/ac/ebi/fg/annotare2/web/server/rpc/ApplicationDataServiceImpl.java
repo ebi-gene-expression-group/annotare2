@@ -181,6 +181,7 @@ public class ApplicationDataServiceImpl extends ErrorReportingRemoteServiceServl
                 .setUploadTutorialUrls(properties.getUploadTutorialLinks())
                 .setSamplesTutorialUrls(properties.getSamplesTutorialLinks())
                 .setAssignmentTutorialUrls(properties.getAssignmentTutorialLinks())
+                .setBlockedFileExtensions(properties.getBlockedFileExtensions())
                 .build();
     }
 

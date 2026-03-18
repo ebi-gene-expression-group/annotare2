@@ -272,6 +272,10 @@ public class AnnotareProperties implements DataFileStoreProperties {
         return getBooleanProperty("annotare.createButton.enabled");
     }
 
+    public List<String> getBlockedFileExtensions() {
+        return getListProperty("blocked.extensions");
+    }
+
     protected File getDirProperty(String name) {
         String property = getProperty(name);
         File dir = isNullOrEmpty(property) ?

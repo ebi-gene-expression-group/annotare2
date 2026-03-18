@@ -166,7 +166,7 @@ public class DataFilesUploadViewImpl extends Composite implements DataFilesUploa
                 "For more information, please refer to the " +
                 "<a href=\"https://www.ebi.ac.uk/fg/annotare/help/after_sub_data_availability.html#retention\" target=\"_blank\">Annotare data retention policy</a>.");
 
-        blockedFileExtensions = new ArrayList<>(Arrays.asList("doc","docx","rtf","xls","xlsx","ppt","ppdt","pptx","pdf","gif","rar","zip","tar","tar.gz","fastq","fq","fq_gz","fastq_gz","fq_bz2","fastq_bz2","7z"));
+        blockedFileExtensions = new ArrayList<>();
 
     }
 
@@ -398,6 +398,8 @@ public class DataFilesUploadViewImpl extends Composite implements DataFilesUploa
             asperaUploadBtn.setVisible(true);
             asperaUrl = properties.getAsperaUrl();
         }
+
+        blockedFileExtensions = new ArrayList<>(properties.getBlockedFileExtensions());
 
         // Configure tutorial links for Upload panel (supports multiple)
         List<DemoLinksBar.LinkItem> demoLinks = new ArrayList<DemoLinksBar.LinkItem>();
