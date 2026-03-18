@@ -230,10 +230,17 @@ public class DataFilesServiceImpl extends SubmissionBasedRemoteService implement
             Map<String,DataFileHandle> files = new HashMap<>();
             FileAvailabilityChecker fileChecker = new FileAvailabilityChecker(annotareProperties);
 
+            List<String> blockedFileExtensions = annotareProperties.getBlockedFileExtensions();
+
             for (String infoStr : filesInfo) {
                 FtpFileInfo info = getFtpFileInfo(infoStr);
 
                 if (null != info) {
+                    if (blockedFileExtensions.contains(getExtension(info.getFileName()).toLowerCase()) || info.getFileName().contains("tar.gz")) {
+                        errors.append(" - file \"").append(info.getFileName()).append("\" has a blocked extension").append("\n");
+                        continue;
+                    }
+
                     URI fileUri;
                     URI legacyFileUri;
 
@@ -451,5 +458,34 @@ public class DataFilesServiceImpl extends SubmissionBasedRemoteService implement
             return new FtpFileInfo(fileName, md5);
         }
         return null;
+    }
+
+    private String getExtension(String filename) {
+        if (filename == null) {
+            return null;
+        } else {
+            int index = indexOfExtension(filename);
+            return index == -1 ? "" : filename.substring(index + 1);
+        }
+    }
+
+    private int indexOfExtension(String filename) {
+        if (filename == null) {
+            return -1;
+        } else {
+            int extensionPos = filename.lastIndexOf('.');
+            int lastSeparator = indexOfLastSeparator(filename);
+            return lastSeparator > extensionPos ? -1 : extensionPos;
+        }
+    }
+
+    private int indexOfLastSeparator(String filename) {
+        if (filename == null) {
+            return -1;
+        } else {
+            int lastUnixPos = filename.lastIndexOf('/');
+            int lastWindowsPos = filename.lastIndexOf('\\');
+            return Math.max(lastUnixPos, lastWindowsPos);
+        }
     }
 }
