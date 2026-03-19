@@ -60,7 +60,7 @@
         pageTitle = "Validate Experiment";
     } else if ("help/experiment_types.html".equals(pageName)) {
         pageTitle = "Experiment Types";
-    } else if ("help/assign_files.html".equals(pageName)) {
+    } else if ("help/file_upload.html#assign-files".equals(pageName)) {
         pageTitle = "Assign Files";
     }
     if (!pageTitle.isEmpty()) {

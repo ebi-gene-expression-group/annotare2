@@ -572,7 +572,7 @@ public class DataFilesUploadViewImpl extends Composite implements DataFilesUploa
                     NotificationPopupPanel.error("Your file exceeds the 1GB limit.\n" +
                             "Please use the FTP/Aspera upload option for your file(s)\n" +
                             "Help page instructions can be found here: " +
-                            "<a href='https://www.ebi.ac.uk/fg/annotare/help/ftp_upload.html' target='_blank'>Annotare Submission Guide</a>", true, true);
+                            "<a href='https://www.ebi.ac.uk/fg/annotare/help/file_upload.html#ftp' target='_blank'>Annotare Submission Guide</a>", true, true);
                 }
                 else {
                     NotificationPopupPanel.error(duplicateFilesMsg.toString(), true, false);

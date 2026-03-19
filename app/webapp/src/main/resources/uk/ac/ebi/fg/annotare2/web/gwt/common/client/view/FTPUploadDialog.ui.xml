@@ -70,7 +70,7 @@
                     </ul>
                 </li>
                 <li>
-                    <a href="https://www.ebi.ac.uk/fg/annotare/help/ftp_upload.html" target="_blank">Upload your data file(s)</a> to our FTP server at
+                    <a href="https://www.ebi.ac.uk/fg/annotare/help/file_upload.html#ftp" target="_blank">Upload your data file(s)</a> to our FTP server at
                     <g:Anchor ui:field="ftpUrl" addStyleNames="{style.marker}">_ftp_url_</g:Anchor>
                     using the following credentials:
                     user <g:InlineLabel ui:field="ftpUsername" addStyleNames="{style.marker}">_ftp_username_</g:InlineLabel>,
