@@ -105,6 +105,28 @@
 
         <jsp:body>
             <jsp:include page="/assets/pages/${param.pageName}"/>
+            <c:if test="${fn:startsWith(param.pageName, 'help/')}">
+                <script defer src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.2.1/iframeResizer.min.js"></script>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function(event) {
+                        if (typeof iFrameResize === 'function') {
+                            iFrameResize({inPageLinks:true}, 'iframe.row');
+                        }
+                    });
+                    window.addEventListener('message', function(event) {
+                        //Listen to messages came from your GitHub Pages domain
+                        if (event.origin !== 'https://ebi-gene-expression-group.github.io') {
+                            return;
+                        }
+                        if (event.data && event.data.type === 'iframe-resize') {
+                            const iframes = document.querySelectorAll('iframe.row');
+                            for (var i = 0; i < iframes.length; i++) {
+                                iframes[i].style.height = (event.data.height) + 'px';
+                            }
+                        }
+                    });
+                </script>
+            </c:if>
         </jsp:body>
     </t:frontierpage>
 </compress:html>
