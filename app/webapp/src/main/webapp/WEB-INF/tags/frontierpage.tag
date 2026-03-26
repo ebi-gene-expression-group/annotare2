@@ -140,6 +140,7 @@
                                              title="Annotare ${project.version} rev.${buildNumber}">Home</a></li>
                         <li class="first"><a href="https://www.ebi.ac.uk/biostudies/ArrayExpress/studies" target="_blank">Go to BioStudies</a></li>
                         <li${helpClass}><a href="${pageContext.request.contextPath}/help">Submission Guide</a></li>
+                        <li${helpClass}><a href="${pageContext.request.contextPath}/help/faq.html">FAQs</a></li>
                         <li class="last${aboutClass}"><a href="${pageContext.request.contextPath}/about">About
                             Annotare</a></li>
                     </ul>
