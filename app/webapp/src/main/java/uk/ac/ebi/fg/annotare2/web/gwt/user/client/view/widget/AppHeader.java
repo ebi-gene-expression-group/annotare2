@@ -52,6 +52,11 @@ public class AppHeader extends Composite implements IsWidget {
         userNameLabel.setText(name);
     }
 
+    @UiHandler("faqsButton")
+    void onFAQSButtonClick(ClickEvent event) {
+        Window.open(Urls.getContextUrl() + "help/faq.html", "_blank", "");
+    }
+
     @UiHandler("helpButton")
     void onHelpButtonClick(ClickEvent event) {
         Window.open(Urls.getContextUrl() + "help/", "_blank", "");

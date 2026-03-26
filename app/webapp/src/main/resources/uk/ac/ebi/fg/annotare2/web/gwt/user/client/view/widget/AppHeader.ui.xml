@@ -91,6 +91,10 @@
                                                                                 title="Link to detailed Annotare instructions."/>
                         Help
                     </g:Button>
+                    <g:Button addStyleNames="{style.helpButton}" ui:field="faqsButton"
+                              title="FAQs"><i class="fa fa-question-circle" title="FAQs"/>
+                        FAQs
+                    </g:Button>
                 </div>
             </div>
             <div style="clear:both"></div>
