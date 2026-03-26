@@ -208,6 +208,11 @@ public class EditorTitleBarViewImpl extends Composite implements EditorTitleBarV
         }
     }
 
+    @UiHandler("faqsButton")
+    void onFAQsButtonClick(ClickEvent event) {
+        Window.open(Urls.getContextUrl() + "help/faq.html", "_blank", "");
+    }
+
     @UiHandler("helpButton")
     void onHelpButtonClick(ClickEvent event) {
         Window.open(Urls.getContextUrl() + "help/", "_blank", "");

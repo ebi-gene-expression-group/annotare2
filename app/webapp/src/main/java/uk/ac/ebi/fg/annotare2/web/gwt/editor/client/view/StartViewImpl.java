@@ -73,4 +73,9 @@ public class StartViewImpl extends Composite implements StartView {
     void onHelpButtonClick(ClickEvent event) {
         Window.open(Urls.getContextUrl() + "help/", "_blank", "");
     }
+
+    @UiHandler("faqsButton")
+    void onFAQSButtonClick(ClickEvent event) {
+        Window.open(Urls.getContextUrl() + "help/faq.html", "_blank", "");
+    }
 }
