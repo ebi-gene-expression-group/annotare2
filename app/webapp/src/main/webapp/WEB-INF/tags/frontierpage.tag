@@ -138,11 +138,11 @@
                     <ul id="local-nav" class="menu float-left" data-description="navigational">
                         <li class="first"><a href="${pageContext.request.contextPath}/"
                                              title="Annotare ${project.version} rev.${buildNumber}">Home</a></li>
-                        <li class="first"><a href="https://www.ebi.ac.uk/biostudies/ArrayExpress/studies" target="_blank">Go to BioStudies</a></li>
                         <li${helpClass}><a href="${pageContext.request.contextPath}/help">Submission Guide</a></li>
                         <li${helpClass}><a href="${pageContext.request.contextPath}/help/faq.html">FAQs</a></li>
                         <li class="last${aboutClass}"><a href="${pageContext.request.contextPath}/about">About
                             Annotare</a></li>
+                        <li class="first"><a href="https://www.ebi.ac.uk/biostudies/ArrayExpress/studies" target="_blank">Go to BioStudies</a></li>
                     </ul>
                     <!-- If you need to include functional (as opposed to purely navigational) links in your local menu,
                          add them here, and give them a class of "functional". Remember: you'll need a class of "last" for

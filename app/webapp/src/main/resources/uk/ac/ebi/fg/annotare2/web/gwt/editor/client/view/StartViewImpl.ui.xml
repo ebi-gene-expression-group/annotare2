@@ -110,11 +110,11 @@
             <div class="{style.square}">
                 <span class="{style.title}">New Experiment Submission</span>
                 <tr>
-                    <td align="right">
-                        <g:Button addStyleNames="{style.helpButton}" ui:field="helpButton" title="Link to detailed Annotare instructions"><i class="fa fa-life-ring" title="Link to detailed Annotare instructions."/>Help</g:Button>
+                    <td  align="right">
+                        <g:Button addStyleNames="{style.helpButton}" ui:field="faqsButton" title="FAQs"><i class="fa fa-question-circle" title="FAQs"/>FAQs</g:Button>
                     </td>
                     <td>
-                        <g:Button addStyleNames="{style.helpButton}" ui:field="faqsButton" title="FAQs"><i class="fa fa-question-circle" title="FAQs"/>FAQs</g:Button>
+                        <g:Button addStyleNames="{style.helpButton}" ui:field="helpButton" title="Link to detailed Annotare instructions"><i class="fa fa-life-ring" title="Link to detailed Annotare instructions."/>Help</g:Button>
                     </td>
                     <td>
                         <g:Button addStyleNames="{style.regularButton}" ui:field="contactButton" title="Ask a curator a question"><i class="fa fa-comments-o"/>Contact Us</g:Button>
