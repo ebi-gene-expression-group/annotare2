@@ -27,13 +27,13 @@ spec:
       resources:
         requests:
           cpu: "1"
-          memory: "2Gi"
+          memory: "4Gi"
         limits:
           cpu: "2"
-          memory: "4Gi"
+          memory: "8Gi"
       env:
         - name: MAVEN_OPTS
-          value: "-Dmaven.repo.local=/root/.m2/repository -XX:MaxRAMPercentage=75.0 -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
+          value: "-Dmaven.repo.local=/root/.m2/repository -Xmx2g -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
       volumeMounts:
         - name: maven-repo
           mountPath: /root/.m2
