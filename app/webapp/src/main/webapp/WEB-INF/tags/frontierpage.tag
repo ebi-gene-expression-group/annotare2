@@ -113,28 +113,30 @@
 <header id="masthead-black-bar" class="clearfix masthead-black-bar">
 </header>
 <div id="content">
-    <div data-sticky-container>
-        <header id="masthead" class="masthead" data-sticky data-sticky-on="large" data-top-anchor="content:top"
-                data-btm-anchor="content:bottom">
-            <div class="masthead-inner row columns">
-                <!-- local-title -->
-                <div class="columns medium-12">
-                    <a href="${pageContext.request.contextPath}/" title="Back to Annotare homepage">
-                        <div class="media-object" id="local-title">
-                            <div class="media-object-section hide-for-small-only">
-                                <img class="svg"
-                                     src="${pageContext.request.contextPath}/assets/images/annotare-logo-64.svg"
-                                     alt="Annotare logo" width="64" height="64">
-                            </div>
-                            <div class="media-object-section">
-                                <h1>Annotare</h1>
-                            </div>
+    <header id="masthead" class="masthead">
+        <div class="masthead-inner row columns">
+            <!-- local-title -->
+            <div class="columns medium-12">
+                <a href="${pageContext.request.contextPath}/" title="Back to Annotare homepage">
+                    <div class="media-object" id="local-title">
+                        <div class="media-object-section hide-for-small-only">
+                            <img class="svg"
+                                 src="${pageContext.request.contextPath}/assets/images/annotare-logo-64.svg"
+                                 alt="Annotare logo" width="64" height="64">
                         </div>
-                    </a>
-                </div>
-                <!-- /local-title -->
-                <!-- local-nav -->
-                <nav>
+                        <div class="media-object-section">
+                            <h1>Annotare</h1>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- /local-title -->
+        </div>
+        <!-- local-nav -->
+        <div id="sticky-nav-wrapper" data-sticky-container>
+            <nav data-sticky data-sticky-on="large" data-top-anchor="sticky-nav-wrapper:top"
+                 data-btm-anchor="content:bottom" data-margin-top="0" style="width: 100%; background-color: #6C8CD1; z-index: 1000;">
+                <div class="row columns">
                     <ul id="local-nav" class="menu float-left" data-description="navigational">
                         <li class="first"><a href="${pageContext.request.contextPath}/"
                                              title="Annotare ${project.version} rev.${buildNumber}">Home</a></li>
@@ -173,11 +175,12 @@
                         <%--<li class="functional"><a href="#" class="icon icon-generic feedback" data-icon="\">Feedback</a></li>--%>
 
                     </ul>
-                </nav>
-                <!-- /local-nav -->
-            </div>
-        </header>
-    </div>
+                </div>
+            </nav>
+        </div>
+        <!-- /local-nav -->
+    </header>
+
 
     <section id="main-content-area" role="main" class="row columns">
         <jsp:doBody/>
