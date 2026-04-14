@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -156,6 +157,78 @@ public class TableTest {
         assertEquals("10", table.getValueAt(1, 2));
         assertEquals("year", table.getValueAt(1, 3));
         assertEquals("UO", table.getValueAt(1, 4));
+    }
+
+    @Test
+    public void testTableSdrfCleanUpWithScatteredColumns() {
+        Table table = new Table();
+        // Line 1: Headers (31-44 indices in sdrf.tsv correspond to 0-13 here)
+        table.addRow(Arrays.asList(
+                "Protocol REF", "Protocol REF", "Derived Array Data File", // Group 1
+                "Protocol REF", "Protocol REF", "Derived Array Data File", // Group 2
+                "Protocol REF", "Derived Array Data File",               // Group 3
+                "Factor Value[disease]", "Factor Value[genotype]",       // FV 1
+                "Factor Value[disease]", "Factor Value[genotype]",       // FV 2
+                "Factor Value[disease]", "Factor Value[genotype]"        // FV 3
+        ));
+
+        // Row 1 (SRG 12 equivalent)
+        table.addRow(Arrays.asList(
+                "Protocol 6", "Protocol 5", "counts.txt",
+                "Protocol 6", "", "",
+                "Protocol 5", "normalised.txt",
+                "", "",
+                "", "",
+                "HFD", "FGFR1 KO"
+        ));
+
+        // Row 2: Another sample having values in different columns
+        table.addRow(Arrays.asList(
+                "Protocol 6", "Protocol 5", "counts.txt",
+                "", "", "",
+                "", "",
+                "Chow", "wild type genotype",
+                "", "",
+                "", ""
+        ));
+
+        table.cleanUp();
+
+        // After cleanUp, they should be consolidated.
+        // There should be ONLY ONE group for Factor Value[disease] and one for Factor Value[genotype].
+        // And Derived Array Data File should be consolidated.
+
+        // Row 1 check
+        assertEquals("Protocol 6", table.getValueAt(1, 0));
+        assertEquals("Protocol 5", table.getValueAt(1, 1));
+        assertEquals("counts.txt", table.getValueAt(1, 2));
+        assertEquals("Protocol 6", table.getValueAt(1, 3));
+        assertEquals("Protocol 5", table.getValueAt(1, 4));
+        assertEquals("normalised.txt", table.getValueAt(1, 5));
+        assertEquals("HFD", table.getValueAt(1, 6));
+        assertEquals("FGFR1 KO", table.getValueAt(1, 7));
+
+        // Row 2 check
+        assertEquals("Protocol 6", table.getValueAt(2, 0));
+        assertEquals("Protocol 5", table.getValueAt(2, 1));
+        assertEquals("counts.txt", table.getValueAt(2, 2));
+        assertNull(table.getValueAt(2, 3));
+        assertNull(table.getValueAt(2, 4));
+        assertNull(table.getValueAt(2, 5));
+        assertEquals("Chow", table.getValueAt(2, 6));
+        assertEquals("wild type genotype", table.getValueAt(2, 7));
+
+        // Let's check the headers too
+        assertEquals("Protocol REF", table.getValueAt(0, 0));
+        assertEquals("Protocol REF", table.getValueAt(0, 1));
+        assertEquals("Derived Array Data File", table.getValueAt(0, 2));
+        assertEquals("Protocol REF", table.getValueAt(0, 3));
+        assertEquals("Protocol REF", table.getValueAt(0, 4));
+        assertEquals("Derived Array Data File", table.getValueAt(0, 5));
+        assertEquals("Factor Value[disease]", table.getValueAt(0, 6));
+        assertEquals("Factor Value[genotype]", table.getValueAt(0, 7));
+
+        assertEquals(8, table.getWidth());
     }
 
     private static <T> List<T> asList(T... array) {

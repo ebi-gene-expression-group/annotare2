@@ -174,4 +174,44 @@ public class MageTabFilesTest {
         assertEquals("10", resultRow.get(4));
         assertEquals("", resultRow.get(3)); // Original FV position cleared
     }
+
+    @Test
+    public void testConsolidateFactorValuesAndDerivedArrayDataFiles() {
+        List<String> header = new ArrayList<>(Arrays.asList(
+                "Source Name",
+                "Protocol REF", "Protocol REF", "Derived Array Data File", // Group 1
+                "Protocol REF", "Protocol REF", "Derived Array Data File", // Group 2
+                "Factor Value [disease]", "Factor Value [genotype]",       // FV Group 1
+                "Factor Value [disease]", "Factor Value [genotype]"        // FV Group 2 (Duplicate names)
+        ));
+
+        // Row with scattered values
+        List<String> row1 = new ArrayList<>(Arrays.asList(
+                "Sample1",
+                "P1", "P2", "counts.txt",
+                "P1", "", "", // Scattered Protocol REF
+                "HFD", "",
+                "", "Genotype1" // Scattered Factor Values
+        ));
+
+        List<List<String>> rows = new ArrayList<>();
+        rows.add(header);
+        rows.add(row1);
+
+        MageTabFiles.consolidateDerivedArrayDataFiles(rows);
+        MageTabFiles.reorganizeFactorValueColumns(rows);
+
+        // Check Derived Array Data File consolidation
+        assertEquals("P1", rows.get(1).get(1));
+        assertEquals("P2", rows.get(1).get(2));
+        assertEquals("counts.txt", rows.get(1).get(3));
+        assertEquals("P1", rows.get(1).get(4));
+        assertEquals("", rows.get(1).get(5));
+        assertEquals("", rows.get(1).get(6));
+
+        // Check Factor Value consolidation
+        assertEquals(13, rows.get(0).size());
+        assertEquals("HFD", rows.get(1).get(11));
+        assertEquals("Genotype1", rows.get(1).get(12));
+    }
 }

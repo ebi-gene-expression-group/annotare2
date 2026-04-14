@@ -186,10 +186,8 @@ public class MageTabFiles {
                 return;
             }
 
-            // Step 1: Reorganize Factor Value columns
+            consolidateDerivedArrayDataFiles(rows);
             reorganizeFactorValueColumns(rows);
-
-            // Step 2: Remove empty columns
             removeEmptyColumns(rows);
 
             // Write back to file
@@ -218,60 +216,75 @@ public class MageTabFiles {
         List<String> header = rows.get(0);
         int originalWidth = header.size();
 
-        // Find all Factor Value column indices and their associated Unit and Term Source/Accession columns
-        Map<Integer, List<Integer>> factorValueToRelatedMap = new LinkedHashMap<>();
+        int noOfAddedColumns = 0;
+        Map<String, List<Integer>> headerToNewIndices = new LinkedHashMap<>();
+        Map<Integer, Integer> oldToNewIdxMap = new LinkedHashMap<>();
 
         for (int i = 0; i < originalWidth; i++) {
-            if (header.get(i) != null && header.get(i).contains("Factor Value")) {
-                List<Integer> related = new ArrayList<>();
+            String hStr = header.get(i);
+            if (hStr != null && hStr.contains("Factor Value")) {
+                List<Integer> newIndices = headerToNewIndices.get(hStr);
+                if (newIndices == null) {
+                    newIndices = new ArrayList<>();
+                    noOfAddedColumns++;
+                    int newFvIdx = originalWidth + noOfAddedColumns - 1;
+                    while (header.size() <= newFvIdx) {
+                        header.add("");
+                    }
+                    header.set(newFvIdx, hStr);
+                    newIndices.add(newFvIdx);
+
+                    int j = i + 1;
+                    while (j < originalWidth) {
+                        String h = header.get(j);
+                        if (h != null && (h.contains("Unit") || h.contains("Term Source REF") || h.contains("Term Accession Number"))) {
+                            noOfAddedColumns++;
+                            int newRelIdx = originalWidth + noOfAddedColumns - 1;
+                            while (header.size() <= newRelIdx) {
+                                header.add("");
+                            }
+                            header.set(newRelIdx, h);
+                            newIndices.add(newRelIdx);
+                            j++;
+                        } else {
+                            break;
+                        }
+                    }
+                    headerToNewIndices.put(hStr, newIndices);
+                }
+
+                // Map old indices to new indices
+                oldToNewIdxMap.put(i, newIndices.get(0));
                 int j = i + 1;
+                int k = 1;
                 while (j < originalWidth) {
                     String h = header.get(j);
                     if (h != null && (h.contains("Unit") || h.contains("Term Source REF") || h.contains("Term Accession Number"))) {
-                        related.add(j);
+                        if (k < newIndices.size()) {
+                            oldToNewIdxMap.put(j, newIndices.get(k));
+                        }
                         j++;
+                        k++;
                     } else {
                         break;
                     }
                 }
-                factorValueToRelatedMap.put(i, related);
+                i = j - 1;
             }
         }
 
-        if (factorValueToRelatedMap.isEmpty()) {
+        if (oldToNewIdxMap.isEmpty()) {
             return;
         }
-
-        // Create new columns at the end for Factor Values and related columns
-        List<String> newColumnHeaders = new ArrayList<>();
-        Map<Integer, Integer> oldToNewIdxMap = new LinkedHashMap<>();
-
-        for (Map.Entry<Integer, List<Integer>> entry : factorValueToRelatedMap.entrySet()) {
-            int fvIdx = entry.getKey();
-            oldToNewIdxMap.put(fvIdx, header.size() + newColumnHeaders.size());
-            newColumnHeaders.add(header.get(fvIdx));
-            for (int relIdx : entry.getValue()) {
-                oldToNewIdxMap.put(relIdx, header.size() + newColumnHeaders.size());
-                newColumnHeaders.add(header.get(relIdx));
-            }
-        }
-
-        // Add new column headers at the end
-        header.addAll(newColumnHeaders);
 
         // Process each data row
         for (int rowIdx = 1; rowIdx < rows.size(); rowIdx++) {
             List<String> row = rows.get(rowIdx);
 
-            // Ensure row has enough columns
-            while (row.size() < originalWidth) {
-                row.add("");
-            }
-
-            // For each Factor Value and associated Unit column, move the value to the new location
-            for (int oldIdx : oldToNewIdxMap.keySet()) {
+            for (Map.Entry<Integer, Integer> entry : oldToNewIdxMap.entrySet()) {
+                int oldIdx = entry.getKey();
+                int newIdx = entry.getValue();
                 String value = oldIdx < row.size() ? row.get(oldIdx) : "";
-                int newIdx = oldToNewIdxMap.get(oldIdx);
 
                 if (!isUnassignedOrEmpty(value)) {
                     // Add value to new position
@@ -284,6 +297,69 @@ public class MageTabFiles {
                 // Clear original position
                 if (oldIdx < row.size()) {
                     row.set(oldIdx, "");
+                }
+            }
+        }
+    }
+
+    static void consolidateDerivedArrayDataFiles(List<List<String>> rows) {
+        if (rows.isEmpty()) {
+            return;
+        }
+
+        List<String> header = rows.get(0);
+        int rowWidth = header.size();
+        List<List<Integer>> groups = new ArrayList<>();
+        for (int i = 0; i < rowWidth; i++) {
+            String h = header.get(i);
+            if ("Derived Array Data File".equalsIgnoreCase(h)) {
+                List<Integer> group = new ArrayList<>();
+                int j = i - 1;
+                while (j >= 0 && "Protocol REF".equalsIgnoreCase(header.get(j))) {
+                    boolean alreadyInGroup = false;
+                    for (List<Integer> g : groups) {
+                        if (g.contains(j)) {
+                            alreadyInGroup = true;
+                            break;
+                        }
+                    }
+                    if (alreadyInGroup) break;
+                    group.add(0, j);
+                    j--;
+                }
+                group.add(i);
+                groups.add(group);
+            }
+        }
+
+        if (groups.isEmpty()) {
+            return;
+        }
+
+        for (int i = 1; i < rows.size(); i++) {
+            List<String> row = rows.get(i);
+            List<String> values = new ArrayList<>();
+            for (List<Integer> group : groups) {
+                for (Integer colIdx : group) {
+                    String value = colIdx < row.size() ? row.get(colIdx) : "";
+                    if (!isUnassignedOrEmpty(value)) {
+                        values.add(value);
+                    }
+                    if (colIdx < row.size()) {
+                        row.set(colIdx, "");
+                    }
+                }
+            }
+
+            int valIdx = 0;
+            for (List<Integer> group : groups) {
+                for (Integer colIdx : group) {
+                    if (valIdx < values.size()) {
+                        while (row.size() <= colIdx) {
+                            row.add("");
+                        }
+                        row.set(colIdx, values.get(valIdx++));
+                    }
                 }
             }
         }
