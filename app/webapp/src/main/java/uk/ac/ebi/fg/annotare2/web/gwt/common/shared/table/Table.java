@@ -98,6 +98,7 @@ public class Table implements IsSerializable {
 
     public void cleanUp(){
         int rowWidth = getWidth();
+        consolidateDerivedArrayDataFiles();
         cleanUpFactorValueColumns(rowWidth);
         rowWidth = getWidth(); //getting updated width
 
@@ -134,25 +135,48 @@ public class Table implements IsSerializable {
 
     private void cleanUpFactorValueColumns(int rowWidth) {
         int noOfAddedColumns = 0;
+        Map<String, List<Integer>> headerToNewIndices = new LinkedHashMap<>();
         Map<Integer, Integer> oldToNewIdxMap = new LinkedHashMap<>();
 
         for (int i = 0; i < rowWidth; i++) {
             String header = rows.get(0).getValue(i);
             if (header != null && header.contains("Factor Value")) {
-                noOfAddedColumns++;
-                int newFvIdx = rowWidth + noOfAddedColumns - 1;
-                rows.get(0).setValue(newFvIdx, header);
-                oldToNewIdxMap.put(i, newFvIdx);
+                List<Integer> newIndices = headerToNewIndices.get(header);
+                if (newIndices == null) {
+                    newIndices = new ArrayList<>();
+                    noOfAddedColumns++;
+                    int newFvIdx = rowWidth + noOfAddedColumns - 1;
+                    rows.get(0).setValue(newFvIdx, header);
+                    newIndices.add(newFvIdx);
 
+                    int j = i + 1;
+                    while (j < rowWidth) {
+                        String h = rows.get(0).getValue(j);
+                        if (h != null && (h.contains("Unit") || h.contains("Term Source REF") || h.contains("Term Accession Number"))) {
+                            noOfAddedColumns++;
+                            int newRelIdx = rowWidth + noOfAddedColumns - 1;
+                            rows.get(0).setValue(newRelIdx, h);
+                            newIndices.add(newRelIdx);
+                            j++;
+                        } else {
+                            break;
+                        }
+                    }
+                    headerToNewIndices.put(header, newIndices);
+                }
+
+                // Map old indices to new indices
+                oldToNewIdxMap.put(i, newIndices.get(0));
                 int j = i + 1;
+                int k = 1;
                 while (j < rowWidth) {
                     String h = rows.get(0).getValue(j);
                     if (h != null && (h.contains("Unit") || h.contains("Term Source REF") || h.contains("Term Accession Number"))) {
-                        noOfAddedColumns++;
-                        int newRelIdx = rowWidth + noOfAddedColumns - 1;
-                        rows.get(0).setValue(newRelIdx, h);
-                        oldToNewIdxMap.put(j, newRelIdx);
+                        if (k < newIndices.size()) {
+                            oldToNewIdxMap.put(j, newIndices.get(k));
+                        }
                         j++;
+                        k++;
                     } else {
                         break;
                     }
@@ -174,6 +198,59 @@ public class Table implements IsSerializable {
                 if (!isUnassignedOrEmpty(value)) {
                     row.setValue(newIdx, value);
                     row.setValue(oldIdx, null);
+                }
+            }
+        }
+    }
+
+    private void consolidateDerivedArrayDataFiles() {
+        int rowWidth = getWidth();
+        List<List<Integer>> groups = new ArrayList<>();
+        for (int i = 0; i < rowWidth; i++) {
+            String header = rows.get(0).getValue(i);
+            if ("Derived Array Data File".equalsIgnoreCase(header)) {
+                List<Integer> group = new ArrayList<>();
+                int j = i - 1;
+                while (j >= 0 && "Protocol REF".equalsIgnoreCase(rows.get(0).getValue(j))) {
+                    boolean alreadyInGroup = false;
+                    for (List<Integer> g : groups) {
+                        if (g.contains(j)) {
+                            alreadyInGroup = true;
+                            break;
+                        }
+                    }
+                    if (alreadyInGroup) break;
+                    group.add(0, j);
+                    j--;
+                }
+                group.add(i);
+                groups.add(group);
+            }
+        }
+
+        if (groups.isEmpty()) {
+            return;
+        }
+
+        for (int i = 1; i < rows.size(); i++) {
+            Row row = rows.get(i);
+            List<String> values = new ArrayList<>();
+            for (List<Integer> group : groups) {
+                for (Integer colIdx : group) {
+                    String value = row.getValue(colIdx);
+                    if (!isUnassignedOrEmpty(value)) {
+                        values.add(value);
+                    }
+                    row.setValue(colIdx, null);
+                }
+            }
+
+            int valIdx = 0;
+            for (List<Integer> group : groups) {
+                for (Integer colIdx : group) {
+                    if (valIdx < values.size()) {
+                        row.setValue(colIdx, values.get(valIdx++));
+                    }
                 }
             }
         }
