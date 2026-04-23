@@ -84,7 +84,7 @@ public class AccountManager {
     }
 
     private boolean isVerificationTokenExpired(final User user) {
-        return user.getTokenExpiryTime().isBefore(LocalDateTime.now());
+        return null != user.getTokenExpiryTime() && user.getTokenExpiryTime().isBefore(LocalDateTime.now());
     }
 
     public boolean isPrivacyNoticeAccepted(final String email){
@@ -116,6 +116,7 @@ public class AccountManager {
         if (null != user) {
             user.setEmailVerified(false);
             user.setVerificationToken(generateToken());
+            user.setTokenExpiryTime(LocalDateTime.now().plusMinutes(Long.parseLong(properties.getTokenExpiryTime())));
             userDao.save(user);
         }
         return user;
@@ -126,6 +127,7 @@ public class AccountManager {
         if (null != user) {
             user.setEmailVerified(true);
             user.setVerificationToken(null);
+            user.setTokenExpiryTime(null);
             userDao.save(user);
         }
         return user;
