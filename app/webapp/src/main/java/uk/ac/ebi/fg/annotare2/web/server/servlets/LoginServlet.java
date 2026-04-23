@@ -49,7 +49,6 @@ public class LoginServlet extends HttpServlet {
         log.debug("Login details submitted; validating..");
         ValidationErrors errors = new ValidationErrors();
         try {
-            EMAIL_SESSION_ATTRIBUTE.set(request.getSession(), request.getParameter(FormParams.EMAIL_PARAM));
             errors.append(accountService.login(request));
             if (errors.isEmpty()) {
                 log.debug("Login details are valid; Authorization succeeded");
@@ -57,6 +56,7 @@ public class LoginServlet extends HttpServlet {
                 return;
             } else if (!errors.getErrors(FormParams.TOKEN_PARAM).isEmpty()) {
                 log.debug("Email needs to be activated; redirecting");
+                saveEmailInSessionIfPresent(request);
                 INFO_SESSION_ATTRIBUTE.set(request.getSession(), "The email verification code has been sent to you, please enter it now");
                 VERIFY_EMAIL.redirect(request, response);
                 return;
@@ -74,5 +74,12 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGIN.forward(getServletConfig().getServletContext(), request, response);
+    }
+
+    private void saveEmailInSessionIfPresent(HttpServletRequest request) {
+        String email = request.getParameter(FormParams.EMAIL_PARAM);
+        if (email != null) {
+            EMAIL_SESSION_ATTRIBUTE.set(request.getSession(), email);
+        }
     }
 }

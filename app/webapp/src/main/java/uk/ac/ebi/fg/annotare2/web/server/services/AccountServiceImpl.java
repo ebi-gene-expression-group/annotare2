@@ -142,8 +142,8 @@ public class AccountServiceImpl implements AccountService {
                 errors.append(FormParams.EMAIL_PARAM, "User with this email does not exist");
             } else {
                 if (!accountManager.isEmailVerified(params.getEmail())) {
-                    if (!accountManager.isVerificationTokenValid(params.getEmail(), params.getToken())) {
-                        errors.append(FormParams.TOKEN_PARAM, "Incorrect code; please try again or request a new one");
+                    if(isTokenInvalid(params.getEmail(), params.getToken())) {
+                        handleInvalidToken(errors, params.getEmail());
                     } else {
                         User user = accountManager.setEmailVerified(params.getEmail());
                         try {
@@ -173,22 +173,26 @@ public class AccountServiceImpl implements AccountService {
         if (null == user) {
             errors.append(FormParams.EMAIL_PARAM, "User with this email does not exist");
         } else {
-            try {
-                messenger.send(
-                        MessengerImpl.VERIFY_EMAIL_TEMPLATE,
-                        ImmutableMap.of(
-                                "to.name", user.getName(),
-                                "to.email", user.getEmail(),
-                                "verification.token", user.getVerificationToken()
-                        ),
-                        user
-                );
-            } catch (RuntimeException x) {
-                log.error("There was a problem sending email", x);
-            }
+            sendVerificationEmail(user);
 
         }
         return errors;
+    }
+
+    private void sendVerificationEmail(User user) {
+        try {
+            messenger.send(
+                    MessengerImpl.VERIFY_EMAIL_TEMPLATE,
+                    ImmutableMap.of(
+                            "to.name", user.getName(),
+                            "to.email", user.getEmail(),
+                            "verification.token", user.getVerificationToken()
+                    ),
+                    user
+            );
+        } catch (RuntimeException x) {
+            log.error("There was a problem sending email", x);
+        }
     }
 
     @Transactional
@@ -202,8 +206,8 @@ public class AccountServiceImpl implements AccountService {
             }
             if (!accountManager.isEmailVerified(params.getEmail())) {
                 if (null != params.getToken()) {
-                    if (!accountManager.isVerificationTokenValid(params.getEmail(), params.getToken())) {
-                        errors.append(FormParams.TOKEN_PARAM, "Incorrect code; please try again or request a new one");
+                    if(isTokenInvalid(params.getEmail(), params.getToken())) {
+                        handleInvalidToken(errors, params.getEmail());
                     } else {
                         accountManager.setEmailVerified(params.getEmail());
                     }
@@ -218,6 +222,16 @@ public class AccountServiceImpl implements AccountService {
             }
         }
         return errors;
+    }
+
+    private void handleInvalidToken(ValidationErrors errors, String email) {
+        errors.append(FormParams.TOKEN_PARAM, "Your token is invalid or expired. A new verification email will be sent to you shortly.");
+        User user = accountManager.requestVerifyEmail(email);
+        sendVerificationEmail(user);
+    }
+
+    private boolean isTokenInvalid(String email, String token) {
+        return !accountManager.isVerificationTokenValid(email, token) || accountManager.isVerificationTokenExpired(email);
     }
 
     @Transactional
