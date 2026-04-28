@@ -21,6 +21,19 @@
 <%
     String pageName = request.getParameter("pageName");
     String pageTitle = "";
+    String pagePath = pageName == null ? null : "/assets/pages/" + pageName;
+
+    if (pageName == null || pageName.contains("..")) {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+    }
+
+    java.io.InputStream pageStream = application.getResourceAsStream(pagePath);
+    if (pageStream == null) {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+    }
+    pageStream.close();
 
     if (pageName.equals("about.html")) {
         pageContext.setAttribute("aboutClass", " active");
