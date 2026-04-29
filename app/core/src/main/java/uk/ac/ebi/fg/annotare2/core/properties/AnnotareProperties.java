@@ -252,6 +252,11 @@ public class AnnotareProperties implements DataFileStoreProperties {
         return getProperty("globus.transfer.api.url");
     }
 
+    public String getDocbotBackendUrl() {
+        String url = getProperty("docbot.backend.url");
+        return isNullOrEmpty(url) ? "https://wwwdev.ebi.ac.uk/docbot/api" : url;
+    }
+
     public String getContextPath() {
         return getProperty("annotare.context");
     }

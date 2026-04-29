@@ -16,5 +16,6 @@
 <%@tag description="Chatbot body template" pageEncoding="UTF-8"%>
 <docbot-modal
   selectedteam="arrayexpress"
-  backendurl="https://wwwdev.ebi.ac.uk/docbot/api" >
+  backendurl="${applicationScope.docbotBackendUrl}"
+  enableselector="false">
 </docbot-modal>
