@@ -23,6 +23,7 @@ import com.netflix.governator.LifecycleInjector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.fg.annotare2.core.AnnotarePluginModules;
+import uk.ac.ebi.fg.annotare2.core.properties.AnnotareProperties;
 import uk.ac.ebi.fg.annotare2.magetabcheck.CheckerModule;
 
 import javax.servlet.ServletContext;
@@ -41,6 +42,7 @@ public class AnnotareWebAppInitializer extends GuiceServletContextListener {
         super.contextInitialized(servletContextEvent);
 
         ServletContext sc = servletContextEvent.getServletContext();
+        sc.setAttribute("docbotBackendUrl", injector.getInstance(AnnotareProperties.class).getDocbotBackendUrl());
         sc.setAttribute(Injector.class.getName(), injector);
     }
 

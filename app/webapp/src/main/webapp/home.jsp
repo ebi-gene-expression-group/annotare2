@@ -22,10 +22,12 @@
     <link type="text/css" rel="stylesheet" href="assets/css/general.css">
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/font-awesome.min.css">
     <t:analytics></t:analytics>
+    <t:chatbot></t:chatbot>
     <script type="text/javascript" src="${pageContext.request.contextPath}/UserApp/UserApp.nocache.js"></script>
 </head>
 <body revision="${buildNumber}">
 <t:analytics-body></t:analytics-body>
+<t:chatbot-body></t:chatbot-body>
 <!-- OPTIONAL: include this if you want history support -->
 <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
 
