@@ -15,7 +15,7 @@
 --%>
 <%@tag description="Chatbot body template" pageEncoding="UTF-8"%>
 <docbot-modal
-  selectedteam="arrayexpress"
+  selectedteam="annotare"
   backendurl="${applicationScope.docbotBackendUrl}"
   enableselector="false">
 </docbot-modal>
