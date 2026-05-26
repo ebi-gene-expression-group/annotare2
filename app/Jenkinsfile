@@ -7,7 +7,7 @@ if (currentBuild.getBuildCauses().toString().contains('BranchIndexingCause')) {
 pipeline {
     agent {
         kubernetes {
-            cloud 'atlas-admin-2'
+            cloud 'fg-devops'
             yamlFile 'app/annotare-maven-pod.yaml'
             defaultContainer 'maven'
         }

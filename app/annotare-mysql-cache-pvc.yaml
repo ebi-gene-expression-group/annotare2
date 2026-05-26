@@ -5,7 +5,7 @@ metadata:
   labels:
     app: annotare-maven-agent
 spec:
-  storageClassName: fg-nfs
+  storageClassName: csi-manila-nfs
   accessModes:
     - ReadWriteMany
   resources:
