@@ -72,6 +72,7 @@ spec:
       volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
+          subPath: mysql
   volumes:
     - name: maven-repo
       persistentVolumeClaim:
