@@ -85,12 +85,14 @@ public class CustomDataGrid<T> extends DataGrid<T> {
         HeaderPanel header = (HeaderPanel) getWidget();
         final CustomScrollPanel scrollPanel = (CustomScrollPanel) header.getContentWidget();
         final int hPos = scrollPanel.getHorizontalScrollbar().getHorizontalScrollPosition();
+        final int vPos = scrollPanel.getVerticalScrollPosition();
 
         super.setRowData(start, values);
 
         Scheduler.get().scheduleDeferred(new Command() {
             public void execute() {
                 scrollPanel.setHorizontalScrollPosition(hPos);
+                scrollPanel.setVerticalScrollPosition(vPos);
             }
         });
     }

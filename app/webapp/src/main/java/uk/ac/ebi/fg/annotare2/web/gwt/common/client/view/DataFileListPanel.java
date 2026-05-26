@@ -21,6 +21,7 @@ import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -51,12 +52,14 @@ public class DataFileListPanel extends SimpleLayoutPanel {
     private final MultiSelectionModel<DataFileRow> selectionModel;
     private final HTML emptyTableWidget;
     private final CheckboxHeader checkboxHeader;
+    private final Map<Column<?, ?>, Comparator<DataFileRow>> sortComparators = new HashMap<Column<?, ?>, Comparator<DataFileRow>>();
     private final static int MAX_FILES = 40000;
 
     private long submissionId;
     private Presenter presenter;
 
     private Column<DataFileRow, String> statusTextColumn;
+    private Object rowKeyToRestore;
 
     public DataFileListPanel() {
         grid = new CustomDataGrid<>(MAX_FILES, true);
@@ -126,9 +129,11 @@ public class DataFileListPanel extends SimpleLayoutPanel {
             public void update(int index, DataFileRow row, String value) {
                 final String oldName = row.getName();
                 String newName = trimValue(value);
+                rowKeyToRestore = row.getIdentity();
                 presenter.renameFile(row, newName, new AsyncCallback<Void>() {
                     @Override
                     public void onFailure(Throwable throwable) {
+                        rowKeyToRestore = null;
                         NotificationPopupPanel.error("Unable to rename file '" + oldName + "'", true, false);
                     }
 
@@ -137,6 +142,12 @@ public class DataFileListPanel extends SimpleLayoutPanel {
 
                     }
                 });
+            }
+        });
+        setSortable(nameColumn, new Comparator<DataFileRow>() {
+            @Override
+            public int compare(DataFileRow left, DataFileRow right) {
+                return compareStrings(left.getName(), right.getName());
             }
         });
         grid.addResizableColumn(nameColumn, "Name");
@@ -150,6 +161,12 @@ public class DataFileListPanel extends SimpleLayoutPanel {
                 return object.getCreated();
             }
         };
+        setSortable(dateColumn, new Comparator<DataFileRow>() {
+            @Override
+            public int compare(DataFileRow left, DataFileRow right) {
+                return compareDates(left.getCreated(), right.getCreated());
+            }
+        });
         grid.addResizableColumn(dateColumn, "Date");
         grid.setColumnWidth(dateColumn, 25, Style.Unit.PCT);
         statusTextColumn = new Column<DataFileRow, String>(nameCell) {
@@ -159,6 +176,12 @@ public class DataFileListPanel extends SimpleLayoutPanel {
                 return row.getStatus().getTitle();
             }
         };
+        setSortable(statusTextColumn, new Comparator<DataFileRow>() {
+            @Override
+            public int compare(DataFileRow left, DataFileRow right) {
+                return compareStrings(getStatusTitle(left), getStatusTitle(right));
+            }
+        });
         statusTextColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         grid.addResizableColumn(statusTextColumn, "Status");
         grid.setColumnWidth(statusTextColumn, 15, Style.Unit.PCT);
@@ -174,6 +197,12 @@ public class DataFileListPanel extends SimpleLayoutPanel {
 
         sizeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         sizeColumn.setCellStyleNames("fileSizeColumn");
+        setSortable(sizeColumn, new Comparator<DataFileRow>() {
+            @Override
+            public int compare(DataFileRow left, DataFileRow right) {
+                return compareLongs(left.getFileSize(), right.getFileSize());
+            }
+        });
 
         SafeHtmlHeader header = new SafeHtmlHeader(new SafeHtml() {
 
@@ -182,13 +211,18 @@ public class DataFileListPanel extends SimpleLayoutPanel {
                 return "<div style=\"text-align:center;\">File Size (Bytes)</div>";
             }
         });
-
         grid.addColumn(sizeColumn,header);
         grid.setColumnWidth(sizeColumn, 30, Style.Unit.PCT);
 
 
         dataProvider = new ListDataProvider<>();
         dataProvider.addDataDisplay(grid);
+        grid.addColumnSortHandler(new ColumnSortEvent.Handler() {
+            @Override
+            public void onColumnSort(ColumnSortEvent event) {
+                sortRows(event);
+            }
+        });
 
         grid.setLoadingIndicator(new LoadingIndicator());
         grid.setEmptyTableWidget(emptyTableWidget);
@@ -204,6 +238,12 @@ public class DataFileListPanel extends SimpleLayoutPanel {
                 return object;
             }
         };
+        setSortable(statusText, new Comparator<DataFileRow>() {
+            @Override
+            public int compare(DataFileRow left, DataFileRow right) {
+                return compareStrings(getStatusTitle(left), getStatusTitle(right));
+            }
+        });
         statusText.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         grid.insertResizableColumn(statusText, "Status", statusTextColumnIndex);
         grid.setColumnWidth(statusText, 15, Style.Unit.PCT);
@@ -222,7 +262,10 @@ public class DataFileListPanel extends SimpleLayoutPanel {
     }
 
     public void setRows(List<DataFileRow> rows) {
-        dataProvider.setList(new ArrayList<DataFileRow>(rows));
+        final Object restoreKey = null != rowKeyToRestore ? rowKeyToRestore : getKeyboardSelectedRowKey();
+        final int restoreColumn = grid.getKeyboardSelectedColumn();
+        dataProvider.setList(applyOrderingPolicy(rows));
+        restoreKeyboardSelection(restoreKey, restoreColumn);
     }
 
     public void setPresenter(Presenter presenter) {
@@ -280,6 +323,160 @@ public class DataFileListPanel extends SimpleLayoutPanel {
             value = value.replaceAll("([^\\t]*)[\\t].*", "$1").trim();
         }
         return value;
+    }
+
+    private void setSortable(Column<DataFileRow, ?> column, Comparator<DataFileRow> comparator) {
+        column.setSortable(true);
+        sortComparators.put(column, comparator);
+    }
+
+    private void sortRows(ColumnSortEvent event) {
+        Comparator<DataFileRow> comparator = sortComparators.get(event.getColumn());
+        if (null == comparator) {
+            return;
+        }
+
+        final Object restoreKey = getKeyboardSelectedRowKey();
+        final int restoreColumn = grid.getKeyboardSelectedColumn();
+        List<DataFileRow> rows = dataProvider.getList();
+        if (event.isSortAscending()) {
+            Collections.sort(rows, comparator);
+        } else {
+            Collections.sort(rows, reverse(comparator));
+        }
+        dataProvider.refresh();
+        restoreKeyboardSelection(restoreKey, restoreColumn);
+    }
+
+    private Comparator<DataFileRow> reverse(final Comparator<DataFileRow> comparator) {
+        return new Comparator<DataFileRow>() {
+            @Override
+            public int compare(DataFileRow left, DataFileRow right) {
+                return -comparator.compare(left, right);
+            }
+        };
+    }
+
+    private int compareStrings(String left, String right) {
+        if (left == right) {
+            return 0;
+        } else if (null == left) {
+            return -1;
+        } else if (null == right) {
+            return 1;
+        }
+
+        int result = left.compareToIgnoreCase(right);
+        return 0 != result ? result : left.compareTo(right);
+    }
+
+    private int compareDates(Date left, Date right) {
+        if (left == right) {
+            return 0;
+        } else if (null == left) {
+            return -1;
+        } else if (null == right) {
+            return 1;
+        }
+        return left.compareTo(right);
+    }
+
+    private int compareLongs(long left, long right) {
+        return left < right ? -1 : (left == right ? 0 : 1);
+    }
+
+    private String getStatusTitle(DataFileRow row) {
+        return null != row && null != row.getStatus() ? row.getStatus().getTitle() : null;
+    }
+
+    private List<DataFileRow> applyOrderingPolicy(List<DataFileRow> rows) {
+        List<DataFileRow> currentRows = dataProvider.getList();
+        if (currentRows.isEmpty() || containsNewRows(currentRows, rows)) {
+            return new ArrayList<DataFileRow>(rows);
+        }
+        return rowsInCurrentOrder(currentRows, rows);
+    }
+
+    private boolean containsNewRows(List<DataFileRow> currentRows, List<DataFileRow> rows) {
+        Set<Object> currentKeys = new HashSet<Object>();
+        for (DataFileRow row : currentRows) {
+            currentKeys.add(row.getIdentity());
+        }
+
+        for (DataFileRow row : rows) {
+            if (!currentKeys.contains(row.getIdentity())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<DataFileRow> rowsInCurrentOrder(List<DataFileRow> currentRows, List<DataFileRow> rows) {
+        Map<Object, DataFileRow> updatedRows = new HashMap<Object, DataFileRow>();
+        for (DataFileRow row : rows) {
+            updatedRows.put(row.getIdentity(), row);
+        }
+
+        List<DataFileRow> orderedRows = new ArrayList<DataFileRow>();
+        for (DataFileRow currentRow : currentRows) {
+            DataFileRow updatedRow = updatedRows.get(currentRow.getIdentity());
+            if (null != updatedRow) {
+                orderedRows.add(updatedRow);
+            }
+        }
+        return orderedRows;
+    }
+
+    private Object getKeyboardSelectedRowKey() {
+        int rowIndex = grid.getKeyboardSelectedRow() + grid.getPageStart();
+        List<DataFileRow> rows = dataProvider.getList();
+        if (rowIndex >= 0 && rowIndex < rows.size()) {
+            return rows.get(rowIndex).getIdentity();
+        }
+        return null;
+    }
+
+    private void restoreKeyboardSelection(final Object rowKey, final int columnIndex) {
+        if (null == rowKey) {
+            return;
+        }
+
+        final int rowIndex = findRowIndex(rowKey);
+        if (rowIndex < 0) {
+            clearRestoreKey(rowKey);
+            return;
+        }
+
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                int pageStart = grid.getPageStart();
+                int relativeRow = rowIndex - pageStart;
+                if (relativeRow >= 0 && relativeRow < grid.getPageSize()) {
+                    grid.setKeyboardSelectedRow(relativeRow, 0, false);
+                    if (columnIndex >= 0 && columnIndex < grid.getColumnCount()) {
+                        grid.setKeyboardSelectedColumn(columnIndex, false);
+                    }
+                }
+                clearRestoreKey(rowKey);
+            }
+        });
+    }
+
+    private int findRowIndex(Object rowKey) {
+        List<DataFileRow> rows = dataProvider.getList();
+        for (int i = 0; i < rows.size(); i++) {
+            if (rowKey.equals(rows.get(i).getIdentity())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void clearRestoreKey(Object rowKey) {
+        if (rowKey.equals(rowKeyToRestore)) {
+            rowKeyToRestore = null;
+        }
     }
 
     public interface Presenter {
